@@ -21,7 +21,7 @@ export class UsersService {
   ) {}
 
   async getByIdWithOrg(id: number) {
-    const user = await this.usersRepository.getByIdWithOrg(id);
+    const user = await this.orgUsersRepository.getByIdWithOrg(id);
 
     if (!user) throw new NotFoundException(HTTP_MESSAGES.USERS_NOT_FOUND);
 
@@ -29,7 +29,7 @@ export class UsersService {
   }
 
   async getOrgUsers(orgId: number, query: QueryPagination) {
-    const orgUsers = await this.usersRepository.getOrgUsers(orgId, query);
+    const orgUsers = await this.orgUsersRepository.getOrgUsers(orgId, query);
 
     return { message: HTTP_MESSAGES.OK, data: orgUsers };
   }
@@ -87,7 +87,11 @@ export class UsersService {
   async deleteUser(id: number) {
     await this.getById(id);
 
-    await this.usersRepository.deleteUser(id);
+    await this.usersRepository.knex.transaction(async (trn) => {
+      await this.orgUsersRepository.deleteOrgUser({ trn, id });
+
+      await this.usersRepository.deleteUser({ trn, id });
+    });
 
     return { message: HTTP_MESSAGES.DELETED, data: null };
   }

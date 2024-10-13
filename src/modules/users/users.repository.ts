@@ -3,7 +3,6 @@ import { UpdateUserDto } from './dto';
 import { InjectKnex } from 'nestjs-knex';
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from '../auth/entities/users.entity';
-import { getPagination, QueryPagination } from 'src/common/utilis/pagination';
 
 @Injectable()
 export class UsersRepository {
@@ -11,61 +10,6 @@ export class UsersRepository {
 
   async getById(id: number) {
     return await this.knex('users').where({ id }).first();
-  }
-
-  async getByIdWithOrg(id: number) {
-    const knex = this.knex;
-    return await knex('organization_users as ou')
-      .join('users as u', function () {
-        this.on('ou.user_id', '=', 'u.id').andOn(
-          'u.is_deleted',
-          '=',
-          knex.raw('?', [false]),
-        );
-      })
-      .join('organizations as o', 'ou.org_id', '=', 'o.id')
-      .select(
-        'ou.user_id',
-        'ou.org_id',
-        'u.name',
-        'u.username',
-        'u.role',
-        'o.name as org_name',
-      )
-      .where('ou.user_id', id)
-      .andWhere('ou.is_deleted', false)
-      .first();
-  }
-
-  async getOrgUsers(orgId: number, { page, limit }: QueryPagination) {
-    const knex = this.knex;
-
-    return await knex('organization_users as ou')
-      .join('users as u', function () {
-        this.on('ou.user_id', '=', 'u.id').andOn(
-          'u.is_deleted',
-          '=',
-          knex.raw('?', [false]),
-        );
-      })
-      .join('organizations as o', 'ou.org_id', '=', 'o.id')
-      .select(
-        'u.id',
-        'u.name',
-        'u.username',
-        'u.role',
-        this.knex.raw(`
-        json_build_object(
-        'id', o.id,
-        'name', o.name
-        ) AS organization
-        `),
-      )
-      .where('ou.org_id', orgId)
-      .andWhere('ou.is_deleted', false)
-      .orderBy('ou.created_at', 'desc')
-      .limit(limit)
-      .offset(getPagination(page, limit));
   }
 
   async getByUsername(username: string) {
@@ -97,20 +41,10 @@ export class UsersRepository {
       .returning('*');
   }
 
-  async deleteUser(id: number) {
-    return await this.knex.transaction(async (trn) => {
-      try {
-        await trn('organization_users')
-          .where({ user_id: id })
-          .update({ is_deleted: true });
-
-        await trn('users').where({ id }).update({ is_deleted: true });
-
-        await trn.commit();
-      } catch (error) {
-        await trn.rollback();
-        throw error;
-      }
-    });
+  async deleteUser(data: { trn: Knex.Transaction; id: number }) {
+    return await data
+      .trn('users')
+      .where({ id: data.id })
+      .update({ is_deleted: true });
   }
 }
