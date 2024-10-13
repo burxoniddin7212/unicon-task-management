@@ -5,6 +5,8 @@ export async function projectsUp(knex: Knex): Promise<void> {
     table.increments('id').primary();
     table.integer('org_id').references('id').inTable('organizations');
     table.integer('created_by').references('id').inTable('users');
+    table.boolean('is_deleted').defaultTo(false);
+    table.timestamp('created_at').defaultTo(knex.fn.now());
   });
 }
 

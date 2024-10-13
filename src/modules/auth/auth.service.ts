@@ -1,8 +1,8 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginAuthDto } from './dto';
 import { AuthRepository } from './auth.repository';
-import { HTTP_MESSAGES } from 'src/commen/constatns/http-messages';
+import { HTTP_MESSAGES } from 'src/common/constatns/http-messages';
 import { UserEntity } from './entities/users.entity';
 import { JwtService } from '@nestjs/jwt';
 
@@ -25,7 +25,10 @@ export class AuthService {
 
     delete user.password;
 
-    const token = this.jwtService.sign({ id: user.id, role: user.role });
+    const token = this.jwtService.sign(
+      { id: user.id },
+      { secret: process.env.JWT_SECRET, expiresIn: '30d' },
+    );
 
     return { message: HTTP_MESSAGES.OK, data: user, token };
   }
