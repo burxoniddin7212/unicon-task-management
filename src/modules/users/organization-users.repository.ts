@@ -1,10 +1,66 @@
 import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
+import { getPagination, QueryPagination } from 'src/common/utilis/pagination';
 
 @Injectable()
 export class OrganizationUsersRepository {
   constructor(@InjectKnex() private readonly knex: Knex) {}
+
+  async getByIdWithOrg(id: number) {
+    const knex = this.knex;
+    return await knex('organization_users as ou')
+      .join('users as u', function () {
+        this.on('ou.user_id', '=', 'u.id').andOn(
+          'u.is_deleted',
+          '=',
+          knex.raw('?', [false]),
+        );
+      })
+      .join('organizations as o', 'ou.org_id', '=', 'o.id')
+      .select(
+        'ou.user_id',
+        'ou.org_id',
+        'u.name',
+        'u.username',
+        'u.role',
+        'o.name as org_name',
+      )
+      .where('ou.user_id', id)
+      .andWhere('ou.is_deleted', false)
+      .first();
+  }
+
+  async getOrgUsers(orgId: number, { page, limit }: QueryPagination) {
+    const knex = this.knex;
+
+    return await knex('organization_users as ou')
+      .join('users as u', function () {
+        this.on('ou.user_id', '=', 'u.id').andOn(
+          'u.is_deleted',
+          '=',
+          knex.raw('?', [false]),
+        );
+      })
+      .join('organizations as o', 'ou.org_id', '=', 'o.id')
+      .select(
+        'u.id',
+        'u.name',
+        'u.username',
+        'u.role',
+        this.knex.raw(`
+        json_build_object(
+        'id', o.id,
+        'name', o.name
+        ) AS organization
+        `),
+      )
+      .where('ou.org_id', orgId)
+      .andWhere('ou.is_deleted', false)
+      .orderBy('ou.created_at', 'desc')
+      .limit(limit)
+      .offset(getPagination(page, limit));
+  }
 
   async createOrgUser(data: {
     trn: Knex.Transaction;
@@ -18,5 +74,12 @@ export class OrganizationUsersRepository {
         user_id: data.user_id,
       })
       .returning('*');
+  }
+
+  async deleteOrgUser(data: { trn: Knex.Transaction; id: number }) {
+    return await data
+      .trn('organization_users')
+      .where({ user_id: data.id })
+      .update({ is_deleted: true });
   }
 }
