@@ -5,6 +5,8 @@ export interface UserEntity {
   password?: string;
   role: Role;
   created_by: number | null;
+  is_deleted: boolean;
+  created_at: string;
 }
 
 export enum Role {
