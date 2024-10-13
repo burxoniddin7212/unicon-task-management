@@ -14,9 +14,16 @@ export class UsersRepository {
   }
 
   async getByIdWithOrg(id: number) {
-    return await this.knex('organization_users as ou')
+    const knex = this.knex;
+    return await knex('organization_users as ou')
+      .join('users as u', function () {
+        this.on('ou.user_id', '=', 'u.id').andOn(
+          'u.is_deleted',
+          '=',
+          knex.raw('?', [false]),
+        );
+      })
       .join('organizations as o', 'ou.org_id', '=', 'o.id')
-      .join('users as u', 'ou.user_id', '=', 'u.id')
       .select(
         'ou.user_id',
         'ou.org_id',
@@ -27,13 +34,20 @@ export class UsersRepository {
       )
       .where('ou.user_id', id)
       .andWhere('ou.is_deleted', false)
-      .andWhere('u.is_deleted', false)
       .first();
   }
 
   async getOrgUsers(orgId: number, { page, limit }: QueryPagination) {
-    return await this.knex('organization_users as ou')
-      .join('users as u', 'ou.user_id', '=', 'u.id')
+    const knex = this.knex;
+
+    return await knex('organization_users as ou')
+      .join('users as u', function () {
+        this.on('ou.user_id', '=', 'u.id').andOn(
+          'u.is_deleted',
+          '=',
+          knex.raw('?', [false]),
+        );
+      })
       .join('organizations as o', 'ou.org_id', '=', 'o.id')
       .select(
         'u.id',
@@ -42,14 +56,13 @@ export class UsersRepository {
         'u.role',
         this.knex.raw(`
         json_build_object(
-        'id', 'o.id',
-        'name', 'o.name'
+        'id', o.id,
+        'name', o.name
         ) AS organization
         `),
       )
       .where('ou.org_id', orgId)
       .andWhere('ou.is_deleted', false)
-      .andWhere('u.is_deleted', false)
       .orderBy('ou.created_at', 'desc')
       .limit(limit)
       .offset(getPagination(page, limit));
