@@ -2,10 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
 import { getPagination, QueryPagination } from 'src/common/utilis/pagination';
+import { OrganizationUserEntity } from './entities/organization-user.entity';
 
 @Injectable()
 export class OrganizationUsersRepository {
   constructor(@InjectKnex() private readonly knex: Knex) {}
+
+  tableName = 'organization_users';
 
   async getByIdWithOrg(id: number) {
     const knex = this.knex;
@@ -81,5 +84,18 @@ export class OrganizationUsersRepository {
       .trn('organization_users')
       .where({ user_id: data.id })
       .update({ is_deleted: true });
+  }
+
+  getUserOrgByUserId(user_id: number): Promise<OrganizationUserEntity> {
+    const knex = this.knex;
+
+    const query = knex
+      .select('*')
+      .from(this.tableName)
+      .where(`user_id`, user_id)
+      .where(`is_deleted`, false)
+      .first();
+
+    return query;
   }
 }

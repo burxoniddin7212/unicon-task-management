@@ -3,8 +3,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginAuthDto } from './dto';
 import { AuthRepository } from './auth.repository';
 import { HTTP_MESSAGES } from 'src/common/constatns/http-messages';
-import { UserEntity } from './entities/users.entity';
 import { JwtService } from '@nestjs/jwt';
+import { UserEntity, Role } from '../users/entities/user.entity';
+import { OrganizationUserEntity } from '../users/entities/organization-user.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,13 @@ export class AuthService {
 
     delete user.password;
 
+    const orgUser: OrganizationUserEntity =
+      await this.authRepository.getOrgUserByUserId(user.id);
+
+    const userOrgId = user.role == Role.ADMIN ? null : orgUser.org_id;
+
     const token = this.jwtService.sign(
-      { id: user.id },
+      { id: user.id, org_id: userOrgId },
       { secret: process.env.JWT_SECRET, expiresIn: '30d' },
     );
 

@@ -3,6 +3,7 @@ import { InjectKnex } from 'nestjs-knex';
 import { JwtService } from '@nestjs/jwt';
 import { IRequestWithCurrentUser } from '../types/interface';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class VerifyTokenGuard implements CanActivate {
@@ -15,22 +16,26 @@ export class VerifyTokenGuard implements CanActivate {
       .switchToHttp()
       .getRequest<IRequestWithCurrentUser>();
 
-    let token = await request.headers.authorization;
+    let token = request.headers.authorization;
 
     if (!token) return false;
 
     token = token.replace('Bearer ', '');
 
-    const verifyToken: { id: number } = await this.jwtService.verifyAsync(
-      token,
-      { secret: process.env.JWT_SECRET },
-    );
+    const verifyToken: { id: number; org_id: number | null } =
+      await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
 
-    const user = await this.knex('users').where('id', verifyToken.id).first();
+    const user: UserEntity = await this.knex('users')
+      .where('id', verifyToken.id)
+      .first();
 
     if (!user) return false;
 
-    request.user = user;
+    delete user.password;
+
+    request.user = { ...user, org_id: verifyToken.org_id };
 
     return true;
   }

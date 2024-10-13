@@ -1,6 +1,10 @@
 import { Request } from 'express';
-import { UserEntity } from 'src/modules/auth/entities/users.entity';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 
 export interface IRequestWithCurrentUser extends Request {
-  user?: UserEntity;
+  user?: IUserInRequest;
+}
+
+export interface IUserInRequest extends UserEntity {
+  org_id: number;
 }

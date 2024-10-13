@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
-import { LoginAuthDto } from './dto';
 
 @Injectable()
 export class AuthRepository {
@@ -12,5 +11,9 @@ export class AuthRepository {
       .where('username', username)
       .where('password', password)
       .first();
+  }
+
+  async getOrgUserByUserId(id: number) {
+    return await this.knex('organization_users').where('user_id', id).first();
   }
 }
