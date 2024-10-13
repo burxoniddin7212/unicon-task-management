@@ -29,6 +29,8 @@ export class UsersService {
   }
 
   async getOrgUsers(orgId: number, query: QueryPagination) {
+    await this.orgService.getById(orgId);
+
     const orgUsers = await this.orgUsersRepository.getOrgUsers(orgId, query);
 
     return { message: HTTP_MESSAGES.OK, data: orgUsers };
