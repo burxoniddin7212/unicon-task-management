@@ -9,5 +9,6 @@ import { OrganizationsModule } from '../organizations/organizations.module';
   imports: [OrganizationsModule],
   controllers: [UsersController],
   providers: [UsersService, UsersRepository, OrganizationUsersRepository],
+  exports: [UsersService],
 })
 export class UsersModule {}

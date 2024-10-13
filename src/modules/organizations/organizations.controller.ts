@@ -1,7 +1,6 @@
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
 import { OrganizationsService } from './organizations.service';
-import { Role, UserEntity } from '../auth/entities/users.entity';
 import {
   Put,
   Body,
@@ -21,6 +20,8 @@ import { VerifyTokenGuard } from '../shared/guards/verify.token.guard';
 import { setMetadataKey } from 'src/common/constatns/consts';
 import { CreateOrganizationDto, UpdateOrganizationDto } from './dto';
 import { QueryPagination } from 'src/common/utilis/pagination';
+import { IUserInRequest } from '../shared/types/interface';
+import { Role } from '../users/entities/user.entity';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -49,7 +50,7 @@ export class OrganizationsController {
   @SetMetadata(setMetadataKey, [Role.ADMIN])
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create organization' })
-  create(@User() user: UserEntity, @Body() body: CreateOrganizationDto) {
+  create(@User() user: IUserInRequest, @Body() body: CreateOrganizationDto) {
     return this.organizationsService.create(user.id, body);
   }
 

@@ -6,11 +6,12 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { CreateUserForOrganizationDto, UpdateUserDto } from './dto';
-import { UserEntity } from '../auth/entities/users.entity';
 import { OrganizationUsersRepository } from './organization-users.repository';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { HTTP_MESSAGES } from 'src/common/constatns/http-messages';
 import { QueryPagination } from 'src/common/utilis/pagination';
+import { OrganizationUserEntity } from './entities/organization-user.entity';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -42,9 +43,8 @@ export class UsersService {
   ) {
     await this.orgService.getById(body.org_id);
 
-    const checkByUsername = await this.usersRepository.getByUsername(
-      body.username,
-    );
+    const checkByUsername: UserEntity =
+      await this.usersRepository.getByUsername(body.username);
 
     if (checkByUsername)
       throw new BadRequestException(HTTP_MESSAGES.USERS_USERNAME_UNIQUE);
@@ -54,8 +54,8 @@ export class UsersService {
       .update(body.password)
       .digest('hex');
 
-    const [userOrg] = await this.usersRepository.knex.transaction(
-      async (trn) => {
+    const [userOrg]: OrganizationUserEntity[] =
+      await this.usersRepository.knex.transaction(async (trn) => {
         const [user]: UserEntity[] = await this.usersRepository.createUser(
           trn,
           {
@@ -72,8 +72,7 @@ export class UsersService {
           user_id: user.id,
           org_id: body.org_id,
         });
-      },
-    );
+      });
 
     return { message: HTTP_MESSAGES.OK, data: userOrg };
   }
@@ -81,7 +80,7 @@ export class UsersService {
   async updateUser(body: UpdateUserDto) {
     await this.getById(body.user_id);
 
-    const user = await this.usersRepository.updateUser(body);
+    const [user]: UserEntity[] = await this.usersRepository.updateUser(body);
 
     return { message: HTTP_MESSAGES.UPDATED, data: user };
   }
@@ -89,11 +88,7 @@ export class UsersService {
   async deleteUser(id: number) {
     await this.getById(id);
 
-    await this.usersRepository.knex.transaction(async (trn) => {
-      await this.orgUsersRepository.deleteOrgUser({ trn, id });
-
-      await this.usersRepository.deleteUser({ trn, id });
-    });
+    await this.usersRepository.deleteUser(id);
 
     return { message: HTTP_MESSAGES.DELETED, data: null };
   }
@@ -104,5 +99,11 @@ export class UsersService {
     if (!user) throw new NotFoundException(HTTP_MESSAGES.USERS_NOT_FOUND);
 
     return { message: HTTP_MESSAGES.OK, data: user };
+  }
+
+  async getUserOrgIdByUserId(user_id: number) {
+    const orgUser = await this.orgUsersRepository.getUserOrgByUserId(user_id);
+
+    return orgUser;
   }
 }

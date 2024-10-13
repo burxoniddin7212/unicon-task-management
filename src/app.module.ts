@@ -7,6 +7,8 @@ import { UsersModule } from './modules/users/users.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { JwtModule } from '@nestjs/jwt';
 import { SharedModule } from './modules/shared/shared.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { SharedModule } from './modules/shared/shared.module';
     AuthModule,
     UsersModule,
     OrganizationsModule,
+    ProjectsModule,
+    TasksModule,
   ],
 })
 export class AppModule {}

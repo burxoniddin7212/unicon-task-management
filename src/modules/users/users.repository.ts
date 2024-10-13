@@ -2,18 +2,20 @@ import { Knex } from 'knex';
 import { UpdateUserDto } from './dto';
 import { InjectKnex } from 'nestjs-knex';
 import { Injectable } from '@nestjs/common';
-import { UserEntity } from '../auth/entities/users.entity';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
   constructor(@InjectKnex() readonly knex: Knex) {}
 
-  async getById(id: number) {
-    return await this.knex('users').where({ id }).first();
+  tableName = 'users';
+
+  async getById(id: number): Promise<UserEntity> {
+    return await this.knex('users').select('*').where({ id }).first();
   }
 
   async getByUsername(username: string) {
-    return await this.knex('users').where({ username }).first();
+    return await this.knex(this.tableName).where({ username }).first();
   }
 
   async createUser(
@@ -23,7 +25,7 @@ export class UsersRepository {
       'name' | 'role' | 'created_by' | 'password' | 'username'
     >,
   ): Promise<UserEntity[]> {
-    return await trn('users')
+    return await trn(this.tableName)
       .insert({
         name: data.name,
         role: data.role,
@@ -35,16 +37,24 @@ export class UsersRepository {
   }
 
   async updateUser(body: UpdateUserDto) {
-    return await this.knex('users')
+    return await this.knex(this.tableName)
       .where({ id: body.user_id })
       .update({ name: body.name, role: body.role })
       .returning('*');
   }
 
-  async deleteUser(data: { trn: Knex.Transaction; id: number }) {
-    return await data
-      .trn('users')
-      .where({ id: data.id })
-      .update({ is_deleted: true });
+  async deleteUser(id: number) {
+    return await this.knex.transaction(async (trn) => {
+      await trn('organization_users')
+        .where({ user_id: id })
+        .update({ is_deleted: true });
+
+      await trn(this.tableName).where({ id: id }).update({ is_deleted: true });
+
+      await trn('tasks')
+        .where({ worker_user_id: id })
+        .whereIn('status', ['CREATED', 'IN_PROCESS'])
+        .update({ worker_user_id: null });
+    });
   }
 }

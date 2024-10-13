@@ -17,10 +17,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { VerifyTokenGuard } from '../shared/guards/verify.token.guard';
 import { RoleGuard } from '../shared/guards/role.guard';
 import { setMetadataKey } from 'src/common/constatns/consts';
-import { Role, UserEntity } from '../auth/entities/users.entity';
 import { CreateUserForOrganizationDto, UpdateUserDto } from './dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { QueryPagination } from 'src/common/utilis/pagination';
+import { IUserInRequest } from '../shared/types/interface';
+import { Role } from './entities/user.entity';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -50,7 +51,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create user for organization' })
   createUserForOrganization(
-    @User() user: UserEntity,
+    @User() user: IUserInRequest,
     @Body() body: CreateUserForOrganizationDto,
   ) {
     return this.usersService.createUserForOrganization(user.id, body);
