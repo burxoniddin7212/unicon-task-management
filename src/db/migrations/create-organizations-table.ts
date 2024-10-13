@@ -7,6 +7,8 @@ export async function organizatinsUp(knex: Knex): Promise<void> {
       table.increments('id').primary();
       table.string('name').notNullable();
       table.integer('created_by').references('id').inTable('users');
+      table.boolean('is_deleted').defaultTo(false);
+      table.timestamp('created_at').defaultTo(knex.fn.now());
     });
 }
 
