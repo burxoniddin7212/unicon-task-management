@@ -69,6 +69,7 @@ export class TasksRepository {
       })
       .where('p.is_deleted', false)
       .groupBy('p.id', 'p.name')
+      .orderBy('p.created_at', 'desc')
       .limit(limit)
       .offset(getPagination(page, limit));
   }

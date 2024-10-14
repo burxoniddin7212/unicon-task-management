@@ -5,10 +5,10 @@ module.exports = {
   development: {
     client: 'postgresql',
     connection: {
-      host: process.env.PGHOST,
-      user: process.env.PGUSER,
-      password: process.env.PGPASSWORD,
-      database: process.env.PGDATABASE,
+      host: process.env.DBHOST,
+      user: process.env.DBUSER,
+      password: process.env.DBPASSWORD,
+      database: process.env.DBDATABASE,
       searchPath: ['public'],
     },
     migrations: {

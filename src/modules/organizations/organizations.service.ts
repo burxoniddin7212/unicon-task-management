@@ -24,7 +24,7 @@ export class OrganizationsService {
 
     return {
       message: HTTP_MESSAGES.OK,
-      data: { data: organization, total: organization[0]?.total },
+      data: { data: organization, total: organization[0]?.total || 0 },
     };
   }
 

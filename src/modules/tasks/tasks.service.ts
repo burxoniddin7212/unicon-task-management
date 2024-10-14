@@ -37,7 +37,7 @@ export class TasksService {
 
     return {
       message: HTTP_MESSAGES.OK,
-      data: { data: tasks, total: tasks[0]?.total },
+      data: { data: tasks, total: tasks[0]?.total || 0 },
     };
   }
 
@@ -49,7 +49,7 @@ export class TasksService {
       message: HTTP_MESSAGES.OK,
       data: {
         data: projectsWithTasksForUser,
-        total: projectsWithTasksForUser[0]?.total,
+        total: projectsWithTasksForUser[0]?.total || 0,
       },
     };
   }
@@ -62,7 +62,10 @@ export class TasksService {
 
     return {
       message: HTTP_MESSAGES.OK,
-      data: { data: userTasksByStatus, total: userTasksByStatus[0].total },
+      data: {
+        data: userTasksByStatus,
+        total: userTasksByStatus[0]?.total || 0,
+      },
     };
   }
 

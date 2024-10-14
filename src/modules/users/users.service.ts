@@ -34,7 +34,7 @@ export class UsersService {
 
     return {
       message: HTTP_MESSAGES.OK,
-      data: { data: orgUsers, total: orgUsers[0]?.total },
+      data: { data: orgUsers, total: orgUsers[0]?.total || 0 },
     };
   }
 

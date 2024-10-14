@@ -29,7 +29,7 @@ export class ProjectsService {
 
     return {
       message: HTTP_MESSAGES.OK,
-      data: { data: projects, total: projects[0]?.total },
+      data: { data: projects, total: projects[0]?.total || 0 },
     };
   }
 
