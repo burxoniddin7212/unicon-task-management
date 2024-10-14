@@ -14,7 +14,7 @@ export class UsersRepository {
     return await this.knex('users').select('*').where({ id }).first();
   }
 
-  async getByUsername(username: string) {
+  async getByUsername(username: string): Promise<UserEntity> {
     return await this.knex(this.tableName).where({ username }).first();
   }
 
@@ -36,14 +36,14 @@ export class UsersRepository {
       .returning('*');
   }
 
-  async updateUser(body: UpdateUserDto) {
+  async updateUser(body: UpdateUserDto): Promise<UserEntity[]> {
     return await this.knex(this.tableName)
       .where({ id: body.user_id })
       .update({ name: body.name, role: body.role })
       .returning('*');
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number): Promise<void> {
     return await this.knex.transaction(async (trn) => {
       await trn('organization_users')
         .where({ user_id: id })

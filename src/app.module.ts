@@ -9,6 +9,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { SharedModule } from './modules/shared/shared.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './filter/http-exception.filter';
 
 @Module({
   imports: [
@@ -25,6 +27,12 @@ import { TasksModule } from './modules/tasks/tasks.module';
     OrganizationsModule,
     ProjectsModule,
     TasksModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
 export class AppModule {}

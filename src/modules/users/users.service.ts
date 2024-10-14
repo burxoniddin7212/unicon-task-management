@@ -10,8 +10,6 @@ import { OrganizationUsersRepository } from './organization-users.repository';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { HTTP_MESSAGES } from 'src/common/constatns/http-messages';
 import { QueryPagination } from 'src/common/utilis/pagination';
-import { OrganizationUserEntity } from './entities/organization-user.entity';
-import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +32,10 @@ export class UsersService {
 
     const orgUsers = await this.orgUsersRepository.getOrgUsers(orgId, query);
 
-    return { message: HTTP_MESSAGES.OK, data: orgUsers };
+    return {
+      message: HTTP_MESSAGES.OK,
+      data: { data: orgUsers, total: orgUsers[0]?.total },
+    };
   }
 
   async createUserForOrganization(
@@ -43,8 +44,9 @@ export class UsersService {
   ) {
     await this.orgService.getById(body.org_id);
 
-    const checkByUsername: UserEntity =
-      await this.usersRepository.getByUsername(body.username);
+    const checkByUsername = await this.usersRepository.getByUsername(
+      body.username,
+    );
 
     if (checkByUsername)
       throw new BadRequestException(HTTP_MESSAGES.USERS_USERNAME_UNIQUE);
@@ -54,25 +56,23 @@ export class UsersService {
       .update(body.password)
       .digest('hex');
 
-    const [userOrg]: OrganizationUserEntity[] =
-      await this.usersRepository.knex.transaction(async (trn) => {
-        const [user]: UserEntity[] = await this.usersRepository.createUser(
-          trn,
-          {
-            created_by,
-            name: body.name,
-            role: body.role,
-            username: body.username,
-            password: body.password,
-          },
-        );
+    const [userOrg] = await this.usersRepository.knex.transaction(
+      async (trn) => {
+        const [user] = await this.usersRepository.createUser(trn, {
+          created_by,
+          name: body.name,
+          role: body.role,
+          username: body.username,
+          password: body.password,
+        });
 
         return await this.orgUsersRepository.createOrgUser({
           trn,
           user_id: user.id,
           org_id: body.org_id,
         });
-      });
+      },
+    );
 
     return { message: HTTP_MESSAGES.OK, data: userOrg };
   }
@@ -80,7 +80,7 @@ export class UsersService {
   async updateUser(body: UpdateUserDto) {
     await this.getById(body.user_id);
 
-    const [user]: UserEntity[] = await this.usersRepository.updateUser(body);
+    const [user] = await this.usersRepository.updateUser(body);
 
     return { message: HTTP_MESSAGES.UPDATED, data: user };
   }

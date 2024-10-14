@@ -3,6 +3,10 @@ import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
 import { getPagination, QueryPagination } from 'src/common/utilis/pagination';
 import { OrganizationUserEntity } from './entities/organization-user.entity';
+import {
+  IGetOrgUsers,
+  IUserInfoWithOrg,
+} from './interfaces/user.org.user.interface';
 
 @Injectable()
 export class OrganizationUsersRepository {
@@ -10,7 +14,7 @@ export class OrganizationUsersRepository {
 
   tableName = 'organization_users';
 
-  async getByIdWithOrg(id: number) {
+  async getByIdWithOrg(id: number): Promise<IUserInfoWithOrg> {
     const knex = this.knex;
     return await knex('organization_users as ou')
       .join('users as u', function () {
@@ -34,7 +38,10 @@ export class OrganizationUsersRepository {
       .first();
   }
 
-  async getOrgUsers(orgId: number, { page, limit }: QueryPagination) {
+  async getOrgUsers(
+    orgId: number,
+    { page, limit }: QueryPagination,
+  ): Promise<IGetOrgUsers[]> {
     const knex = this.knex;
 
     return await knex('organization_users as ou')
@@ -58,6 +65,7 @@ export class OrganizationUsersRepository {
         ) AS organization
         `),
       )
+      .select(this.knex.raw(`count(ou.id) over() as total`))
       .where('ou.org_id', orgId)
       .andWhere('ou.is_deleted', false)
       .orderBy('ou.created_at', 'desc')
@@ -69,7 +77,7 @@ export class OrganizationUsersRepository {
     trn: Knex.Transaction;
     user_id: number;
     org_id: number;
-  }) {
+  }): Promise<OrganizationUserEntity[]> {
     return await data
       .trn('organization_users')
       .insert({
@@ -79,7 +87,10 @@ export class OrganizationUsersRepository {
       .returning('*');
   }
 
-  async deleteOrgUser(data: { trn: Knex.Transaction; id: number }) {
+  async deleteOrgUser(data: {
+    trn: Knex.Transaction;
+    id: number;
+  }): Promise<OrganizationUserEntity[]> {
     return await data
       .trn('organization_users')
       .where({ user_id: data.id })

@@ -1,8 +1,4 @@
-export enum TASK_STATUS {
-  CREATED = 'CREATED',
-  IN_PROCESS = 'IN_PROCESS',
-  DONE = 'DONE',
-}
+import { TASK_STATUS } from '../enums/task-status.enum';
 
 export interface TaskEntity {
   id: number;

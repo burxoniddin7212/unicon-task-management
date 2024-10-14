@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { Role } from '../entities/user.entity';
+import { Role } from '../enums/user-role-enum';
 
 export class UpdateUserDto {
   @IsString()

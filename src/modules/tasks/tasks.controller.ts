@@ -9,19 +9,23 @@ import {
   Post,
   Put,
   Query,
-  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { VerifyTokenGuard } from '../shared/guards/verify.token.guard';
 import { RoleGuard } from '../shared/guards/role.guard';
-import { setMetadataKey } from 'src/common/constatns/consts';
 import { User } from 'src/common/decorators/user.decorator';
-import { CreateTaskDto, UpdateTaskDto } from './dto';
+import {
+  ChangeTaskStatuskDto,
+  CreateTaskDto,
+  UpdateTaskDto,
+  GetUserTasksByStatusQuery,
+} from './dto';
 import { IUserInRequest } from '../shared/types/interface';
 import { QueryPagination } from 'src/common/utilis/pagination';
-import { Role } from '../users/entities/user.entity';
+import { Role } from '../users/enums/user-role-enum';
+import { Roles } from 'src/common/decorators/role.decorator';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -31,7 +35,7 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get('tasks/:id')
-  @SetMetadata(setMetadataKey, [Role.CHIEF])
+  @Roles(Role.CHIEF, Role.STAFF)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get task by id' })
   getById(@Param('id') id: string) {
@@ -39,7 +43,7 @@ export class TasksController {
   }
 
   @Get('projects/:projectId/tasks')
-  @SetMetadata(setMetadataKey, [Role.CHIEF])
+  @Roles(Role.CHIEF)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get tasks for project' })
   getProjectTasks(
@@ -49,16 +53,49 @@ export class TasksController {
     return this.tasksService.getProjectTasks(+id, query);
   }
 
+  @Get('projects/tasks/for-user')
+  @Roles(Role.STAFF)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get projects with tasks for user' })
+  getProjectsWithTasksForUser(
+    @User() user: IUserInRequest,
+    @Query() query: QueryPagination,
+  ) {
+    return this.tasksService.getProjectsWithTasksForUser(user.id, query);
+  }
+
+  @Get('user/tasks/by-status')
+  @Roles(Role.STAFF)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get user tasks by status' })
+  getUserTasksByStatus(
+    @User() user: IUserInRequest,
+    @Query() query: GetUserTasksByStatusQuery,
+  ) {
+    return this.tasksService.getUserTasksByStatus(user.id, query);
+  }
+
   @Post('tasks')
-  @SetMetadata(setMetadataKey, [Role.CHIEF])
+  @Roles(Role.CHIEF)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create task' })
   create(@User() user: IUserInRequest, @Body() body: CreateTaskDto) {
     return this.tasksService.create(body, user);
   }
 
+  @Put('tasks/change-status')
+  @Roles(Role.STAFF)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Task change status' })
+  changeTaskStatus(
+    @User() user: IUserInRequest,
+    @Body() body: ChangeTaskStatuskDto,
+  ) {
+    return this.tasksService.changeTaskStatus(body, user);
+  }
+
   @Put('tasks')
-  @SetMetadata(setMetadataKey, [Role.CHIEF])
+  @Roles(Role.CHIEF)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update task' })
   update(@User() user: IUserInRequest, @Body() body: UpdateTaskDto) {
@@ -66,7 +103,7 @@ export class TasksController {
   }
 
   @Delete('tasks/:id')
-  @SetMetadata(setMetadataKey, [Role.CHIEF])
+  @Roles(Role.CHIEF)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete task' })
   delete(@Param('id') id: string) {
