@@ -1,28 +1,31 @@
 import { Knex } from 'knex';
-import { usersDown, usersUp } from '../create-users-table';
-import { tasksDown, tasksUp } from '../create-tasks-table';
-import { projectsDown, projectsUp } from '../create-projects-table';
+import { revertCreateUserTable, createUserTable } from '../create-users-table';
+import { reverCreateTaskTable, createTaskTable } from '../create-tasks-table';
 import {
-  organizatinsUp,
-  organizatinsDown,
+  revertCreateProjectTable,
+  createProjectTable,
+} from '../create-projects-table';
+import {
+  createOrganizatinTable,
+  revertCreateOrganizatinTable,
 } from '../create-organizations-table';
 import {
-  organizatinUsersUp,
-  organizatinUsersDown,
+  createOrganizatinUserTable,
+  revertCreateOrganizatinUserTable,
 } from '../create-organization-user-table';
 
 export async function up(knex: Knex): Promise<void> {
-  await usersUp(knex);
-  await organizatinsUp(knex);
-  await organizatinUsersUp(knex);
-  await projectsUp(knex);
-  await tasksUp(knex);
+  await createUserTable(knex);
+  await createOrganizatinTable(knex);
+  await createOrganizatinUserTable(knex);
+  await createProjectTable(knex);
+  await createTaskTable(knex);
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await usersDown(knex);
-  await organizatinsDown(knex);
-  await organizatinUsersDown(knex);
-  await projectsDown(knex);
-  await tasksDown(knex);
+  await revertCreateUserTable(knex);
+  await revertCreateOrganizatinTable(knex);
+  await revertCreateOrganizatinUserTable(knex);
+  await revertCreateProjectTable(knex);
+  await reverCreateTaskTable(knex);
 }

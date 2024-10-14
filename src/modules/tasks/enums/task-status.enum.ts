@@ -1,0 +1,5 @@
+export enum TASK_STATUS {
+  CREATED = 'CREATED',
+  IN_PROCESS = 'IN_PROCESS',
+  DONE = 'DONE',
+}

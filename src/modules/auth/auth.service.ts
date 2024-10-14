@@ -4,8 +4,7 @@ import { LoginAuthDto } from './dto';
 import { AuthRepository } from './auth.repository';
 import { HTTP_MESSAGES } from 'src/common/constatns/http-messages';
 import { JwtService } from '@nestjs/jwt';
-import { UserEntity, Role } from '../users/entities/user.entity';
-import { OrganizationUserEntity } from '../users/entities/organization-user.entity';
+import { Role } from '../users/enums/user-role-enum';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +16,7 @@ export class AuthService {
   async login({ username, password }: LoginAuthDto) {
     password = crypto.createHash('sha256').update(password).digest('hex');
 
-    const user: UserEntity = await this.authRepository.getUserByUsernamePasword(
+    const user = await this.authRepository.getUserByUsernamePasword(
       username,
       password,
     );
@@ -26,10 +25,10 @@ export class AuthService {
 
     delete user.password;
 
-    const orgUser: OrganizationUserEntity =
-      await this.authRepository.getOrgUserByUserId(user.id);
+    const orgUser = await this.authRepository.getOrgUserByUserId(user.id);
 
-    const userOrgId = user.role == Role.ADMIN ? null : orgUser.org_id;
+    const userOrgId: number | null =
+      user.role == Role.ADMIN ? null : orgUser.org_id;
 
     const token = this.jwtService.sign(
       { id: user.id, org_id: userOrgId },

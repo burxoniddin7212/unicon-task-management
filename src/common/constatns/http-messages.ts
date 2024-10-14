@@ -19,4 +19,5 @@ export const HTTP_MESSAGES = {
   TASKS_NOT_FOUND: 'Task not found',
   TASKS_PERMISSION: 'Another org employee cant be assigned by you',
   TASKS_CHANGE_PERMISSION: 'Cant change another org project',
+  TASKS_STATUS_CHANGE_PERMISSION: 'Other user tasks cannot be changed',
 };

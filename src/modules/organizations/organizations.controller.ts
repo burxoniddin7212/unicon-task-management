@@ -11,17 +11,16 @@ import {
   Controller,
   UseGuards,
   HttpStatus,
-  SetMetadata,
   Get,
   Query,
 } from '@nestjs/common';
 import { RoleGuard } from '../shared/guards/role.guard';
 import { VerifyTokenGuard } from '../shared/guards/verify.token.guard';
-import { setMetadataKey } from 'src/common/constatns/consts';
 import { CreateOrganizationDto, UpdateOrganizationDto } from './dto';
 import { QueryPagination } from 'src/common/utilis/pagination';
 import { IUserInRequest } from '../shared/types/interface';
-import { Role } from '../users/entities/user.entity';
+import { Role } from '../users/enums/user-role-enum';
+import { Roles } from 'src/common/decorators/role.decorator';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -31,7 +30,7 @@ export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Get('organizations/:id')
-  @SetMetadata(setMetadataKey, [Role.ADMIN])
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get organization by id' })
   getById(@Param('id') id: string) {
@@ -39,7 +38,7 @@ export class OrganizationsController {
   }
 
   @Get('organizations')
-  @SetMetadata(setMetadataKey, [Role.ADMIN])
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all organizations' })
   getAll(@Query() query: QueryPagination) {
@@ -47,7 +46,7 @@ export class OrganizationsController {
   }
 
   @Post('organizations')
-  @SetMetadata(setMetadataKey, [Role.ADMIN])
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create organization' })
   create(@User() user: IUserInRequest, @Body() body: CreateOrganizationDto) {
@@ -55,7 +54,7 @@ export class OrganizationsController {
   }
 
   @Put('organizations/:id')
-  @SetMetadata(setMetadataKey, [Role.ADMIN])
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update organization' })
   update(@Body() body: UpdateOrganizationDto, @Param('id') id: string) {
@@ -63,7 +62,7 @@ export class OrganizationsController {
   }
 
   @Delete('organizations/:id')
-  @SetMetadata(setMetadataKey, [Role.ADMIN])
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete organization' })
   delete(@Param('id') id: string) {

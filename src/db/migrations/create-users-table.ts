@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-export async function usersUp(knex: Knex): Promise<void> {
+export async function createUserTable(knex: Knex): Promise<void> {
   await knex.schema.withSchema('public').createTable('users', (table) => {
     table.increments('id').primary();
     table.string('name').notNullable();
@@ -13,6 +13,6 @@ export async function usersUp(knex: Knex): Promise<void> {
   });
 }
 
-export async function usersDown(knex: Knex): Promise<void> {
+export async function revertCreateUserTable(knex: Knex): Promise<void> {
   await knex.schema.withSchema('public').dropTableIfExists('users');
 }

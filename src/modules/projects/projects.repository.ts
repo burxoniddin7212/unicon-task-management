@@ -4,6 +4,7 @@ import { InjectKnex } from 'nestjs-knex';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { getPagination, QueryPagination } from 'src/common/utilis/pagination';
 import { ProjectEntity } from './entities/project.entity';
+import { IProjectWithTotal } from './interfaces/project.interface';
 
 @Injectable()
 export class ProjectsRepository {
@@ -19,8 +20,13 @@ export class ProjectsRepository {
       .first();
   }
 
-  async getOrgProjects(orgId: number, { page, limit }: QueryPagination) {
+  async getOrgProjects(
+    orgId: number,
+    { page, limit }: QueryPagination,
+  ): Promise<IProjectWithTotal[]> {
     return await this.knex(this.tableName)
+      .select('*')
+      .select(this.knex.raw(`count(id) over() as total`))
       .where({ org_id: orgId })
       .where({ is_deleted: false })
       .orderBy('created_at', 'desc')
@@ -42,14 +48,14 @@ export class ProjectsRepository {
       .returning('*');
   }
 
-  async update(body: UpdateProjectDto) {
+  async update(body: UpdateProjectDto): Promise<ProjectEntity[]> {
     return await this.knex(this.tableName)
       .where({ id: body.id })
       .update({ name: body.name })
       .returning('*');
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<void> {
     await this.knex.transaction(async (trn) => {
       await trn('tasks').where({ project_id: id }).update({ is_deleted: true });
 

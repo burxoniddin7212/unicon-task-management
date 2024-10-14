@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-export async function tasksUp(knex: Knex): Promise<void> {
+export async function createTaskTable(knex: Knex): Promise<void> {
   await knex.schema.withSchema('public').createTable('tasks ', (table) => {
     table.increments('id').primary();
     table.string('name').notNullable();
@@ -18,6 +18,6 @@ export async function tasksUp(knex: Knex): Promise<void> {
   });
 }
 
-export async function tasksDown(knex: Knex): Promise<void> {
+export async function reverCreateTaskTable(knex: Knex): Promise<void> {
   await knex.schema.withSchema('public').dropTableIfExists('tasks');
 }

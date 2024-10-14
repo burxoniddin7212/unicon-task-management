@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-export async function organizatinUsersUp(knex: Knex): Promise<void> {
+export async function createOrganizatinUserTable(knex: Knex): Promise<void> {
   await knex.schema
     .withSchema('public')
     .createTable('organization_users ', (table) => {
@@ -12,7 +12,9 @@ export async function organizatinUsersUp(knex: Knex): Promise<void> {
     });
 }
 
-export async function organizatinUsersDown(knex: Knex): Promise<void> {
+export async function revertCreateOrganizatinUserTable(
+  knex: Knex,
+): Promise<void> {
   await knex.schema
     .withSchema('public')
     .dropTableIfExists('organization_users');
