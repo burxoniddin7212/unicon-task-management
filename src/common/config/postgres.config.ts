@@ -8,11 +8,11 @@ export function knexConfig(
     config: {
       client: 'postgresql',
       connection: {
-        host: configService.get<string>('PGHOST'),
-        user: configService.get<string>('PGUSER'),
-        port: configService.get<number>('PGPORT'),
-        password: configService.get<string>('PGPASSWORD'),
-        database: configService.get<string>('PGDATABASE'),
+        host: configService.get<string>('DBHOST'),
+        user: configService.get<string>('DBUSER'),
+        port: configService.get<number>('DBPORT'),
+        password: configService.get<string>('DBPASSWORD'),
+        database: configService.get<string>('DBDATABASE'),
         timezone: 'Asia/Tashkent',
       },
     },
