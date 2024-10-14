@@ -91,9 +91,8 @@ export class TasksRepository {
   async create(
     body: CreateTaskDto,
     currentUser: Pick<IUserInRequest, 'id' | 'org_id'>,
-    trx?: Knex.Transaction,
   ): Promise<TaskEntity[]> {
-    const knex = trx ?? this.knex;
+    const knex = this.knex;
 
     const { due_date, name, project_id, worker_user_id } = body;
 
@@ -111,11 +110,8 @@ export class TasksRepository {
     return await knex(this.tableName).insert(dataToInsert).returning('*');
   }
 
-  async update(
-    body: UpdateTaskDto,
-    trx?: Knex.Transaction,
-  ): Promise<TaskEntity[]> {
-    const knex = trx ?? this.knex;
+  async update(body: UpdateTaskDto): Promise<TaskEntity[]> {
+    const knex = this.knex;
 
     const { due_date, name, worker_user_id, task_id } = body;
 
