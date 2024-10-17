@@ -26,6 +26,15 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Database Configuration (ElephantSQL)
+
+- **Host**: `arjuna.db.elephantsql.com`
+- **User**: `ukvcxjuo`
+- **Password**: `crNsgGjk4wVUe_qlXcrRGCuet91SxWvx`
+- **Database**: `ukvcxjuo`
+- **Port**: `5432`
+- **Connection URL**: `postgres://ukvcxjuo:crNsgGjk4wVUe_qlXcrRGCuet91SxWvx@arjuna.db.elephantsql.com/ukvcxjuo`
+
 ## Installation
 
 ```bash
@@ -44,6 +53,23 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Database Setup
+
+```bash
+# creating tables in the database
+$ npm run migration
+
+# create moc data (for admin)
+$ npm run seed
+```
+
+## Admin Credentials
+
+After seeding the database, you can log in as admin using the following login password:
+
+- **Username**: `username`
+- **Password**: `password`
 
 ## Test
 
